@@ -32,4 +32,14 @@ export const getIssues = async (status = null) => {
   return response.data;
 };
 
+/**
+ * Create a new issue for an asset
+ * POST /api/issues
+ * Payload: { title, description, priority, asset_id }
+ */
+export const createIssue = async (issueData) => {
+  const response = await apiClient.post('/api/issues', issueData);
+  return response.data;
+};
+
 export default apiClient;
