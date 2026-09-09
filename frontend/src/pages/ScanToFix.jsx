@@ -1,37 +1,48 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
-  QrCode, 
-  Camera, 
   Scan, 
+  QrCode, 
   ArrowRight, 
-  CheckCircle2, 
-  Sparkles,
-  Info,
-  Layers,
-  Wrench
+  AlertOctagon, 
+  Tag, 
+  Info, 
+  Layers 
 } from 'lucide-react';
-import { MOCK_ASSETS } from '../data/mockData';
 
 export default function ScanToFix() {
-  const [scanning, setScanning] = useState(false);
-  const [detectedAsset, setDetectedAsset] = useState(null);
+  const [assetTagInput, setAssetTagInput] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSimulateScan = (assetTag = "PRJ-205") => {
-    setScanning(true);
-    setDetectedAsset(null);
+  const handleProcessTag = (tagToProcess) => {
+    const rawTag = tagToProcess !== undefined ? tagToProcess : assetTagInput;
+    // Normalize: trim leading/trailing whitespace and convert to uppercase
+    const normalized = (rawTag || '').trim().toUpperCase();
 
-    // Simulate real-world recognition delay
-    setTimeout(() => {
-      setScanning(false);
-      const matched = MOCK_ASSETS.find(a => a.assetTag === assetTag) || MOCK_ASSETS[0];
-      setDetectedAsset(matched);
-    }, 1200);
+    // Validate empty input
+    if (!normalized) {
+      setError('Please enter an asset tag to continue (e.g. PRJ-204).');
+      return;
+    }
+
+    setError(null);
+    // Navigate to the existing asset-aware report route
+    navigate(`/report/${encodeURIComponent(normalized)}`);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleProcessTag();
+  };
+
+  const sampleTags = [
+    { tag: 'PRJ-204', label: 'Room 204 Projector' },
+    { tag: 'PRJ-205', label: 'Room 205 Projector' },
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-16">
+    <div className="max-w-2xl mx-auto space-y-8 pb-16">
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-[#1E293B] border border-[#334155] text-xs font-mono text-[#F97316]">
@@ -41,131 +52,119 @@ export default function ScanToFix() {
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F9FAFB]">
           Scan to Fix
         </h1>
-        <p className="text-base text-[#94A3B8] max-w-md mx-auto">
-          Scan any physical FixTag QR sticker to immediately open issue reporting and maintenance history.
+        <p className="text-sm text-[#94A3B8] max-w-md mx-auto leading-relaxed">
+          Scan the QR tag attached to the physical asset, or enter the asset tag below.
         </p>
       </div>
 
-      {/* Scanner Viewfinder Box */}
-      <div className="relative mx-auto max-w-md bg-[#0F172A] rounded-3xl border-2 border-[#334155] p-6 sm:p-8 shadow-2xl overflow-hidden">
+      {/* Viewfinder & Manual Entry Box */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-[#1E293B] border border-[#334155] shadow-2xl space-y-6">
         
-        {/* Decorative corner brackets (Industrial Viewfinder) */}
-        <div className="absolute top-4 left-4 w-7 h-7 border-t-3 border-l-3 border-[#F97316] rounded-tl-lg" />
-        <div className="absolute top-4 right-4 w-7 h-7 border-t-3 border-r-3 border-[#F97316] rounded-tr-lg" />
-        <div className="absolute bottom-4 left-4 w-7 h-7 border-b-3 border-l-3 border-[#F97316] rounded-bl-lg" />
-        <div className="absolute bottom-4 right-4 w-7 h-7 border-b-3 border-r-3 border-[#F97316] rounded-br-lg" />
+        {/* Viewfinder Graphic (Visual QR Frame) */}
+        <div className="relative mx-auto max-w-xs bg-[#0F172A] rounded-2xl border border-[#334155] p-6 text-center shadow-inner overflow-hidden">
+          {/* Corner viewfinder brackets */}
+          <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-[#F97316] rounded-tl-sm" />
+          <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-[#F97316] rounded-tr-sm" />
+          <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-[#F97316] rounded-bl-sm" />
+          <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-[#F97316] rounded-br-sm" />
 
-        {/* Viewfinder Target Area */}
-        <div className="relative aspect-square w-full rounded-2xl bg-[#1E293B]/60 border border-[#334155] flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-          
           {/* Animated Laser Scanning Line */}
-          <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#F97316] to-transparent shadow-[0_0_12px_#F97316] animate-scanline z-10" />
+          <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#F97316] to-transparent shadow-[0_0_10px_#F97316] animate-scanline z-10" />
 
-          {/* Central Target Grid Icon */}
-          <div className="relative z-0 p-6 rounded-2xl bg-[#111827]/80 border border-[#334155] shadow-inner mb-4">
-            <QrCode className="w-16 h-16 text-[#F97316]/80" />
+          <div className="w-16 h-16 mx-auto rounded-xl bg-[#111827] border border-[#334155] flex items-center justify-center text-[#F97316] shadow-inner mb-3">
+            <QrCode className="w-9 h-9" />
           </div>
 
-          <p className="text-xs font-mono text-[#94A3B8] uppercase tracking-wider">
-            {scanning ? "Aligning QR Matrix..." : "Position QR Code within Frame"}
-          </p>
-
-          {/* Prototype Notice */}
-          <span className="mt-2 text-[10px] text-[#64748B] px-2 py-0.5 rounded bg-[#111827] border border-[#334155]/60">
-            UI Prototype Mode (Hardware Camera in Step 3B)
-          </span>
+          <div className="space-y-1">
+            <p className="text-xs font-mono uppercase font-bold text-[#F9FAFB] tracking-wider">
+              Physical QR Tag Scanner
+            </p>
+            <p className="text-[11px] text-[#64748B]">
+              Camera integration ready • Manual entry active
+            </p>
+          </div>
         </div>
 
-        {/* Scanner Action Controls */}
-        <div className="mt-6 space-y-3">
+        {/* Manual Asset Tag Entry Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label 
+                htmlFor="asset-tag-input"
+                className="block text-xs font-mono uppercase text-[#94A3B8] font-semibold"
+              >
+                Asset Tag
+              </label>
+              <span className="text-[11px] font-mono text-[#64748B]">
+                e.g. PRJ-204, PRJ-205
+              </span>
+            </div>
+
+            <div className="relative">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#F97316] font-mono text-sm font-bold">
+                #
+              </div>
+              <input
+                id="asset-tag-input"
+                type="text"
+                value={assetTagInput}
+                onChange={(e) => {
+                  setAssetTagInput(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="PRJ-204"
+                autoFocus
+                className="w-full pl-8 pr-4 py-3 rounded-xl bg-[#111827] border border-[#334155] font-mono text-base text-[#F9FAFB] placeholder-[#64748B] focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] transition-all tracking-wider uppercase"
+              />
+            </div>
+
+            {/* Validation Error Banner */}
+            {error && (
+              <div className="mt-2 p-2.5 rounded-lg bg-[#EF4444]/15 border border-[#EF4444]/30 text-xs text-[#EF4444] flex items-center space-x-2 animate-in fade-in">
+                <AlertOctagon className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Select Pills for Testing */}
+          <div className="flex items-center space-x-2 text-xs pt-1">
+            <span className="text-[#64748B] font-mono text-[11px]">Quick Test:</span>
+            {sampleTags.map((sample) => (
+              <button
+                key={sample.tag}
+                type="button"
+                onClick={() => handleProcessTag(sample.tag)}
+                className="px-2.5 py-1 rounded-lg bg-[#111827] hover:bg-[#334155] border border-[#334155] text-xs font-mono text-[#F9FAFB] hover:text-[#F97316] transition-colors"
+                title={`Simulate scan of ${sample.label}`}
+              >
+                #{sample.tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Primary Action Button */}
           <button
-            onClick={() => handleSimulateScan("PRJ-205")}
-            disabled={scanning}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center space-x-2 transition-all shadow-lg shadow-[#F97316]/20 disabled:opacity-50"
+            type="submit"
+            className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center space-x-2 transition-all shadow-lg shadow-[#F97316]/20 group"
           >
-            <Camera className="w-4 h-4" />
-            <span>{scanning ? "Reading QR Data..." : "Simulate QR Scan (Projector #PRJ-205)"}</span>
+            <span>Continue to Report</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
-
-          {/* Alternate simulation buttons for testing */}
-          <div className="flex items-center justify-center space-x-2 text-xs text-[#94A3B8]">
-            <span>Or test:</span>
-            <button
-              onClick={() => handleSimulateScan("C-104")}
-              className="text-[#F9FAFB] hover:text-[#F97316] underline underline-offset-4"
-            >
-              Chair #C-104
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => handleSimulateScan("WD-21")}
-              className="text-[#F9FAFB] hover:text-[#F97316] underline underline-offset-4"
-            >
-              Water Dispenser #WD-21
-            </button>
-          </div>
-        </div>
+        </form>
       </div>
 
-      {/* Detection Result Card (Triggered by Simulation) */}
-      {detectedAsset && (
-        <div className="p-6 rounded-2xl bg-[#1E293B] border border-[#22C55E]/40 shadow-xl space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 text-[#22C55E] flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-xs font-mono uppercase text-[#22C55E] font-semibold tracking-wider">
-                  Asset Successfully Detected
-                </span>
-                <h3 className="text-lg font-bold text-white">
-                  {detectedAsset.name}
-                </h3>
-              </div>
-            </div>
-            <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-[#111827] text-[#F97316] border border-[#334155]">
-              #{detectedAsset.assetTag}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs bg-[#111827] p-3 rounded-xl border border-[#334155]/60 text-[#94A3B8]">
-            <div>
-              <span className="text-[#64748B] block">Location</span>
-              <span className="font-medium text-white">{detectedAsset.location}</span>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Current Status</span>
-              <span className="font-medium text-white">{detectedAsset.status}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              onClick={() => navigate(`/report?assetTag=${detectedAsset.assetTag}`)}
-              className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-[#F97316]/20"
-            >
-              <Wrench className="w-3.5 h-3.5" />
-              <span>Report Problem for #{detectedAsset.assetTag}</span>
-            </button>
-            <button
-              onClick={() => navigate(`/assets/${detectedAsset.assetTag}`)}
-              className="py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#334155] hover:bg-[#475569] text-white flex items-center space-x-1.5 transition-colors"
-            >
-              <span>View History</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Info Callout */}
+      {/* Explanatory Callout */}
       <div className="flex items-start space-x-3 p-4 rounded-2xl bg-[#1E293B]/40 border border-[#334155]/60 text-xs text-[#94A3B8]">
         <Info className="w-4 h-4 text-[#F97316] shrink-0 mt-0.5" />
-        <p>
-          In a physical deployment, each QR code encodes a direct deep-link (e.g.{' '}
-          <code className="text-[#F9FAFB] font-mono">/report/PRJ-205</code>). Anyone scanning with their native smartphone camera is instantly routed to this triage workflow.
-        </p>
+        <div className="space-y-1">
+          <span className="font-semibold text-[#F9FAFB] block">
+            How Field QR Triage Works
+          </span>
+          <p className="leading-relaxed">
+            In physical deployments, scanning a physical equipment label opens <code className="text-[#F9FAFB] font-mono bg-[#111827] px-1 py-0.5 rounded">/report/&#123;assetTag&#125;</code> directly. This Scan page provides an equivalent entry point to triage or test any asset tag on campus.
+          </p>
+        </div>
       </div>
     </div>
   );
