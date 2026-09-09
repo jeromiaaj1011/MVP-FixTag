@@ -42,4 +42,18 @@ export const createIssue = async (issueData) => {
   return response.data;
 };
 
+/**
+ * Update issue status and optional resolution notes
+ * PATCH /api/issues/{issueId}/status
+ * Payload: { status, resolution_notes }
+ */
+export const updateIssueStatus = async (issueId, status, resolutionNotes = null) => {
+  const payload = { status };
+  if (resolutionNotes !== null && resolutionNotes !== undefined && resolutionNotes !== '') {
+    payload.resolution_notes = resolutionNotes;
+  }
+  const response = await apiClient.patch(`/api/issues/${issueId}/status`, payload);
+  return response.data;
+};
+
 export default apiClient;
