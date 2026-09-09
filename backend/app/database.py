@@ -1,8 +1,9 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# SQLite database file stored locally in the backend directory
-SQLALCHEMY_DATABASE_URL = "sqlite:///./fixtag.db"
+# SQLite database file stored locally in the backend directory (or overridden via DATABASE_URL)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fixtag.db")
 
 # connect_args={"check_same_thread": False} is required for SQLite
 # because FastAPI can process requests in multiple threads.

@@ -25,6 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      - name: Run automated tests with pytest
+        working-directory: backend
+        run: |
+          python -m pytest -v
+
       - name: Validate FastAPI application import
         working-directory: backend
         run: |
