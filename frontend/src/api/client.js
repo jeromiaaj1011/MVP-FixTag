@@ -22,4 +22,14 @@ export const getAssets = async () => {
   return response.data;
 };
 
+/**
+ * Issues API Endpoints
+ * Supports optional status filter query parameter.
+ */
+export const getIssues = async (status = null) => {
+  const config = status && status !== 'ALL' ? { params: { status } } : {};
+  const response = await apiClient.get('/api/issues', config);
+  return response.data;
+};
+
 export default apiClient;

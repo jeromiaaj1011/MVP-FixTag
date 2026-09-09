@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Layers, 
+  AlertOctagon,
   QrCode, 
   PlusCircle, 
   Menu, 
@@ -17,6 +18,7 @@ export default function Navbar() {
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/assets', label: 'Assets', icon: Layers },
+    { to: '/issues', label: 'Issues', icon: AlertOctagon },
     { to: '/scan', label: 'Scan to Fix', icon: QrCode },
     { to: '/report', label: 'Report Issue', icon: PlusCircle, highlight: true },
   ];

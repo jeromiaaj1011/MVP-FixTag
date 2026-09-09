@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import AssetRegistry from './pages/AssetRegistry';
 import AssetDetail from './pages/AssetDetail';
+import Issues from './pages/Issues';
 import ScanToFix from './pages/ScanToFix';
 import ReportIssue from './pages/ReportIssue';
 
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/assets" element={<AssetRegistry />} />
             <Route path="/assets/:assetTag" element={<AssetDetail />} />
+            <Route path="/issues" element={<Issues />} />
             <Route path="/scan" element={<ScanToFix />} />
             <Route path="/report" element={<ReportIssue />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
