@@ -23,6 +23,16 @@ export const getAssets = async () => {
 };
 
 /**
+ * Retrieve a single asset by tag with its issue history
+ * GET /api/assets/{assetTag}
+ */
+export const getAssetByTag = async (assetTag) => {
+  const response = await apiClient.get(`/api/assets/${encodeURIComponent(assetTag)}`);
+  return response.data;
+};
+
+
+/**
  * Issues API Endpoints
  * Supports optional status filter query parameter.
  */

@@ -25,6 +25,7 @@ export default function App() {
             <Route path="/issues" element={<Issues />} />
             <Route path="/scan" element={<ScanToFix />} />
             <Route path="/report" element={<ReportIssue />} />
+            <Route path="/report/:assetTag" element={<ReportIssue />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

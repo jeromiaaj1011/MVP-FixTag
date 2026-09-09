@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { 
   CheckCircle2, 
   AlertTriangle, 
@@ -21,8 +21,9 @@ import { getAssets, createIssue } from '../api/client';
 import { MOCK_ASSETS } from '../data/mockData';
 
 export default function ReportIssue() {
+  const { assetTag: routeAssetTag } = useParams();
   const [searchParams] = useSearchParams();
-  const initialTag = searchParams.get('assetTag') || 'PRJ-205';
+  const initialTag = routeAssetTag || searchParams.get('assetTag') || 'PRJ-205';
 
   // Backend Assets State
   const [assets, setAssets] = useState([]);

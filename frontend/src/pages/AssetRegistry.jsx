@@ -11,12 +11,15 @@ import {
   RefreshCw,
   Database,
   Calendar,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { getAssets } from '../api/client';
 import { MOCK_ASSETS } from '../data/mockData';
 import StatusBadge from '../components/StatusBadge';
 import PriorityBadge from '../components/PriorityBadge';
+import QrCodeGraphic from '../components/QrCodeGraphic';
 
 export default function AssetRegistry() {
   const [assets, setAssets] = useState([]);
@@ -25,6 +28,7 @@ export default function AssetRegistry() {
   const [usingFallback, setUsingFallback] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('ALL');
+  const [selectedQrAsset, setSelectedQrAsset] = useState(null);
 
   // Fetch real assets from FastAPI backend on mount
   useEffect(() => {
@@ -242,33 +246,48 @@ export default function AssetRegistry() {
                   className="p-5 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-[#94A3B8]/40 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg hover:shadow-black/20"
                 >
                   <div className="space-y-4">
-                    {/* Card Top: Scannable Tag Badge + Status */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#111827] border border-[#334155] flex items-center justify-center text-[#F97316] group-hover:border-[#F97316] transition-colors">
-                          <QrCode className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <span className="font-mono text-xs font-bold text-[#F9FAFB] tracking-wider">
+                    {/* Card Top: Scannable Tag Badge + Status + Dynamic QR Visual */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#111827] text-[#F97316] border border-[#334155]">
                             #{tag}
                           </span>
-                          <span className="block text-[10px] text-[#64748B] uppercase font-mono">
+                          <span className="text-[10px] text-[#64748B] uppercase font-mono truncate">
                             {type}
                           </span>
                         </div>
+
+                        {/* Asset Name and Location */}
+                        <div>
+                          <h3 className="text-base font-bold text-[#F9FAFB] group-hover:text-[#F97316] transition-colors truncate">
+                            {asset.name}
+                          </h3>
+                          <div className="mt-1 flex items-center space-x-1.5 text-xs text-[#94A3B8]">
+                            <MapPin className="w-3.5 h-3.5 text-[#F97316] shrink-0" />
+                            <span className="truncate">{asset.location}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <StatusBadge status={status} size="small" />
-                    </div>
-
-                    {/* Asset Name and Location */}
-                    <div>
-                      <h3 className="text-base font-bold text-[#F9FAFB] group-hover:text-[#F97316] transition-colors">
-                        {asset.name}
-                      </h3>
-                      <div className="mt-1 flex items-center space-x-1.5 text-xs text-[#94A3B8]">
-                        <MapPin className="w-3.5 h-3.5 text-[#64748B]" />
-                        <span>{asset.location}</span>
+                      {/* Dynamic Scannable QR Tag Thumbnail */}
+                      <div className="flex flex-col items-end space-y-2 shrink-0">
+                        <StatusBadge status={status} size="small" />
+                        <button
+                          type="button"
+                          onClick={() => setSelectedQrAsset(asset)}
+                          className="p-1.5 bg-white rounded-xl shadow-sm border border-[#334155]/20 hover:scale-105 transition-transform group/qr"
+                          title={`Click to view full inspection QR tag for #${tag}`}
+                        >
+                          <QRCodeCanvas
+                            id={`qr-card-${tag}`}
+                            value={`${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}/report/${tag}`}
+                            size={56}
+                            level="M"
+                            bgColor="#FFFFFF"
+                            fgColor="#0F172A"
+                          />
+                        </button>
                       </div>
                     </div>
 
@@ -294,15 +313,20 @@ export default function AssetRegistry() {
                   </div>
 
                   {/* Card Footer */}
-                  <div className="mt-5 pt-3 border-t border-[#334155]/60 flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-[#64748B]">
-                      {asset.created_at
-                        ? `Registered ${new Date(asset.created_at).toLocaleDateString()}`
-                        : `${asset.maintenanceHistory?.length || 0} History Events`}
-                    </span>
+                  <div className="mt-5 pt-3 border-t border-[#334155]/60 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQrAsset(asset)}
+                      className="inline-flex items-center space-x-1.5 font-mono text-[#94A3B8] hover:text-[#F97316] transition-colors"
+                      title="View physical inspection tag & QR"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-[#F97316]" />
+                      <span>QR Tag</span>
+                    </button>
+
                     <Link
                       to={`/assets/${tag}`}
-                      className="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#F97316] hover:text-[#FB923C] transition-colors group/link"
+                      className="inline-flex items-center space-x-1.5 font-semibold text-[#F97316] hover:text-[#FB923C] transition-colors group/link"
                     >
                       <span>View Asset</span>
                       <ArrowRight className="w-3.5 h-3.5 group-link:translate-x-1 transition-transform" />
@@ -324,6 +348,54 @@ export default function AssetRegistry() {
             </div>
           )}
         </>
+      )}
+
+      {/* Inspection Tag Preview & Download Modal */}
+      {selectedQrAsset && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setSelectedQrAsset(null)}
+        >
+          <div 
+            className="bg-[#1E293B] border border-[#334155] rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#334155]/60 pb-3">
+              <div className="flex items-center space-x-2 text-left">
+                <QrCode className="w-4 h-4 text-[#F97316]" />
+                <span className="text-xs font-mono font-bold text-[#F9FAFB] uppercase tracking-wider">
+                  Equipment Inspection Tag
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedQrAsset(null)}
+                className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#334155] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <QrCodeGraphic
+              tag={selectedQrAsset.asset_tag || selectedQrAsset.assetTag}
+              name={selectedQrAsset.name}
+              location={selectedQrAsset.location}
+              size="lg"
+              showActions={true}
+              showMetadata={true}
+            />
+
+            <div className="pt-2 flex items-center justify-between text-xs text-[#64748B] font-mono border-t border-[#334155]/60">
+              <span>FixTag Dynamic Tag</span>
+              <Link
+                to={`/report/${selectedQrAsset.asset_tag || selectedQrAsset.assetTag}`}
+                className="text-[#F97316] hover:underline inline-flex items-center space-x-1"
+              >
+                <span>Test Link</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
