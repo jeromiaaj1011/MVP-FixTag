@@ -10,7 +10,7 @@ import ReportIssue from './pages/ReportIssue';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className="min-h-screen bg-[#111827] text-[#F9FAFB] flex flex-col selection:bg-[#F97316] selection:text-white">
         {/* Persistent Top Navigation Bar */}
         <Navbar />
