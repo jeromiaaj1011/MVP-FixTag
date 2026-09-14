@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.database import get_db
+from app.services.notifications import send_discord_issue_alert
 
 router = APIRouter()
 
@@ -26,7 +27,18 @@ def create_issue(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset with ID {issue.asset_id} does not exist. Cannot report an issue for a non-existent asset."
         )
-    return crud.create_issue(db=db, issue=issue)
+
+    # 1. Successfully create and persist the issue in SQLite first
+    db_issue = crud.create_issue(db=db, issue=issue)
+
+    # 2. Trigger Discord notification AFTER successful database persistence
+    try:
+        send_discord_issue_alert(issue=db_issue, asset=asset)
+    except Exception:
+        # Defense-in-depth: Notification failure must NEVER block issue creation
+        pass
+
+    return db_issue
 
 
 @router.get(
